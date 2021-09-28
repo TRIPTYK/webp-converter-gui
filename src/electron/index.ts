@@ -1,15 +1,22 @@
 import {
   app,
   BrowserWindow,
-  Notification,
-  // nativeImage
+  dialog,
+  ipcMain,
+  Notification
 } from "electron";
-import { join } from "path";
+import path, { join } from "path";
 import { parse } from "url";
 import { autoUpdater } from "electron-updater";
 
+// @ts-expect-error
+import CWebp from "cwebp";
 import logger from "./utils/logger";
 import settings from "./utils/settings";
+import { IpcMainEvent } from "electron/main";
+import { writeFile } from "fs/promises";
+
+interface FileTransfer { fileName: string, fileBuffer: ArrayBuffer, quality?: number }
 
 const isProd = process.env.NODE_ENV === "production" || !/[\\/]electron/.exec(process.execPath); // !process.execPath.match(/[\\/]electron/);
 
@@ -26,9 +33,8 @@ const createWindow = () => {
     width: 900,
     height: 680,
     webPreferences: {
-      devTools: isProd ? false : true,
-      contextIsolation: true,
-      enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js'),
+      devTools: true
     },
   });
 
@@ -36,9 +42,9 @@ const createWindow = () => {
     // process.env.NODE_ENV === "production"
     isProd
       ? // in production, use the statically build version of our application
-        `file://${join(__dirname, "public", "index.html")}`
+      `file://${join(__dirname, "public", "index.html")}`
       : // in dev, target the host and port of the local rollup web server
-        "http://localhost:5000";
+      "http://localhost:5000";
 
   mainWindow.loadURL(url).catch((err) => {
     logger.error(JSON.stringify(err));
@@ -46,6 +52,31 @@ const createWindow = () => {
   });
 
   if (!isProd) mainWindow.webContents.openDevTools();
+
+  ipcMain.on('file-uploaded', async (_event: IpcMainEvent, files: FileTransfer[]) => {
+    try {
+      const dir = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+      if (dir.canceled) {
+        throw new Error("Pas de dossier choisi");
+      }
+      const uploadedFileNames = await Promise.all(files.map(async ({ fileName, fileBuffer, quality }) => {
+        const splitted = fileName.split(".");
+        splitted.pop();
+        const nameWithoutExtention = splitted.join(".") ?? fileName;
+        const encoder = new CWebp(Buffer.from(fileBuffer), path.join(isProd ? process.resourcesPath : "", "assets", "cwebp.exe"));
+        encoder.quality(quality ?? 100);
+        const buff = await encoder.toBuffer();
+        const finalName = `${nameWithoutExtention}.webp`;
+        await writeFile(path.join(dir.filePaths[0], finalName), buff);
+        return finalName;
+      }));
+
+      mainWindow!.webContents.send("file-uploaded", uploadedFileNames);
+    } catch (e) {
+      console.log(e);
+      mainWindow!.webContents.send("error", e.message ?? e);
+    }
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;

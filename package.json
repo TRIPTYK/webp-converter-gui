@@ -1,34 +1,15 @@
 {
-  "name": "electron-svelte-typescript",
-  "description": "Template for desktop apps written with Electron, Svelte and Typescript.",
-  "version": "0.1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/fuzzc0re/electron-svelte-typescript.git"
-  },
+  "name": "wepb-convert-gui",
+  "version": "1.0.0",
   "author": {
-    "name": "fuzzc0re",
-    "email": "fuzzc0re@protonmail.com",
-    "url": "https://github.com/fuzzc0re"
+    "name": "Amaury Deflorenne"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/fuzzc0re/electron-svelte-typescript/issues"
-  },
-  "keywords": [
-    "electron",
-    "svelte",
-    "typescript",
-    "electron-builder",
-    "electron-log",
-    "tslint",
-    "ts-jest",
-    "electron-settings",
-    "electron-updater",
-    "rollup"
-  ],
-  "homepage": "https://github.com/fuzzc0re/electron-svelte-typescript#readme",
+  "keywords": [],
   "main": "build/index.js",
+  "repository": {
+    "url": "https://github.com/AmauryD/webp-converter-gui.git"
+  },
   "scripts": {
     "prestart": "cross-env NODE_ENV=development node scripts/preBuild.js",
     "start": "cross-env NODE_ENV=development npm-run-all -p -r build:frontend:dev start:electron",
@@ -60,11 +41,13 @@
     "preversion": "npm-run-all -s lint format"
   },
   "dependencies": {
+    "cwebp": "^2.0.5",
     "electron-log": "^4.3.5",
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.9"
   },
   "devDependencies": {
+    "@beyonk/svelte-notifications": "^4.1.1",
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.2.1",
@@ -76,7 +59,7 @@
     "@typescript-eslint/parser": "^4.28.0",
     "clean-css": "^5.1.2",
     "cross-env": "^7.0.3",
-    "electron": "^13.1.2",
+    "electron": "^15.0.0",
     "electron-builder": "^22.11.7",
     "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
@@ -102,9 +85,13 @@
     "typescript": "^4.3.4"
   },
   "build": {
-    "productName": "Electron Svelte Typescript",
-    "appId": "electron.svelte.typescript",
-    "copyright": "Copyright © 2021 ${author}",
+    "productName": "Image to WEBP converter",
+    "appId": "wepb.converter",
+    "copyright": "Copyright © 2021 AmauryD",
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false
+    },
     "win": {
       "target": [
         "nsis"
@@ -136,7 +123,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "fuzzc0re",
+        "owner": "AmauryD",
         "repo": "electron-svelte-typescript"
       }
     ]

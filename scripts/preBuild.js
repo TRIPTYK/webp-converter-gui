@@ -27,8 +27,10 @@ const generateProdTSConfig = () => {
   const tsconfigElectronJSONRaw = readFileSync(tsconfigElectronJSONPath, "utf8");
   const tsconfigElectronJSON = JSON.parse(tsconfigElectronJSONRaw); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
 
-  tsconfigSvelteJSON.compilerOptions.sourceMap = false;
-  tsconfigElectronJSON.compilerOptions.sourceMap = false;
+  // console.log(tsconfigSvelteJSON)
+
+  // tsconfigSvelteJSON.compilerOptions.sourceMap = false;
+  // tsconfigElectronJSON.compilerOptions.sourceMap = false;
 
   const newTsconfigSvelteJSONPath = tsconfigSvelteJSONPath.replace("tsconfig.svelte.json", "tsconfig.svelte.prod.json");
   const newTsconfigElectronJSONPath = tsconfigElectronJSONPath.replace(
