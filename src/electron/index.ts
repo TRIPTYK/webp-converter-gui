@@ -1,12 +1,6 @@
-import {
-  app,
-  BrowserWindow,
-  dialog,
-  ipcMain,
-  Notification
-} from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Notification } from "electron";
 import path, { join } from "path";
-import {URL} from 'url';
+import { URL } from "url";
 import { autoUpdater } from "electron-updater";
 
 import logger from "./utils/logger";
@@ -15,7 +9,11 @@ import { IpcMainEvent } from "electron/main";
 import { writeFile } from "fs/promises";
 import sharp from "sharp";
 
-interface FileTransfer { fileName: string, fileBuffer: ArrayBuffer, quality?: number }
+interface FileTransfer {
+  fileName: string;
+  fileBuffer: ArrayBuffer;
+  quality?: number;
+}
 
 const isProd = process.env.NODE_ENV === "production" || !/[\\/]electron/.exec(process.execPath); // !process.execPath.match(/[\\/]electron/);
 
@@ -32,8 +30,8 @@ const createWindow = () => {
     width: 900,
     height: 680,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      devTools: true
+      preload: path.join(__dirname, "preload.js"),
+      devTools: true,
     },
   });
 
@@ -41,9 +39,9 @@ const createWindow = () => {
     // process.env.NODE_ENV === "production"
     isProd
       ? // in production, use the statically build version of our application
-      `file://${join(__dirname, "public", "index.html")}`
+        `file://${join(__dirname, "public", "index.html")}`
       : // in dev, target the host and port of the local rollup web server
-      "http://localhost:5000";
+        "http://localhost:5000";
 
   mainWindow.loadURL(url).catch((err) => {
     logger.error(JSON.stringify(err));
@@ -52,29 +50,31 @@ const createWindow = () => {
 
   if (!isProd) mainWindow.webContents.openDevTools();
 
-  ipcMain.on('file-uploaded', async (_event: IpcMainEvent, files: FileTransfer[]) => {
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  ipcMain.on("file-uploaded", async (_event: IpcMainEvent, files: FileTransfer[]) => {
     try {
-      const dir = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+      const dir = await dialog.showOpenDialog({ properties: ["openDirectory"] });
       if (dir.canceled) {
         throw new Error("Pas de dossier choisi");
       }
-      const uploadedFileNames = await Promise.all(files.map(async ({ fileName, fileBuffer, quality }) => {
-        const splitted = fileName.split(".");
-        splitted.pop();
-        const nameWithoutExtention = splitted.join(".") ?? fileName;
-        const encoder = sharp(Buffer.from(fileBuffer)).webp({
-          quality : quality ?? 100
-        });
-        const buff = await encoder.toBuffer();
-        const finalName = `${nameWithoutExtention}.webp`;
-        await writeFile(path.join(dir.filePaths[0], finalName), buff);
-        return finalName;
-      }));
+      const uploadedFileNames = await Promise.all(
+        files.map(async ({ fileName, fileBuffer, quality }) => {
+          const splitted = fileName.split(".");
+          splitted.pop();
+          const nameWithoutExtention = splitted.join(".") ?? fileName;
+          const encoder = sharp(Buffer.from(fileBuffer)).webp({
+            quality: quality ?? 100,
+          });
+          const buff = await encoder.toBuffer();
+          const finalName = `${nameWithoutExtention}.webp`;
+          await writeFile(path.join(dir.filePaths[0], finalName), buff);
+          return finalName;
+        })
+      );
 
-      mainWindow!.webContents.send("file-uploaded", uploadedFileNames);
-    } catch (e) {
-      console.log(e);
-      mainWindow!.webContents.send("error", e.message ?? e);
+      mainWindow?.webContents.send("file-uploaded", uploadedFileNames);
+    } catch (e: unknown) {
+      mainWindow?.webContents.send("error", (e as Error).message ?? e);
     }
   });
 
