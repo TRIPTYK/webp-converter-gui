@@ -6,15 +6,14 @@ import {
   Notification
 } from "electron";
 import path, { join } from "path";
-import { parse } from "url";
+import {URL} from 'url';
 import { autoUpdater } from "electron-updater";
 
-// @ts-expect-error
-import CWebp from "cwebp";
 import logger from "./utils/logger";
 import settings from "./utils/settings";
 import { IpcMainEvent } from "electron/main";
 import { writeFile } from "fs/promises";
+import sharp from "sharp";
 
 interface FileTransfer { fileName: string, fileBuffer: ArrayBuffer, quality?: number }
 
@@ -63,8 +62,9 @@ const createWindow = () => {
         const splitted = fileName.split(".");
         splitted.pop();
         const nameWithoutExtention = splitted.join(".") ?? fileName;
-        const encoder = new CWebp(Buffer.from(fileBuffer), path.join(isProd ? process.resourcesPath : "", "assets", "cwebp.exe"));
-        encoder.quality(quality ?? 100);
+        const encoder = sharp(Buffer.from(fileBuffer)).webp({
+          quality : quality ?? 100
+        });
         const buff = await encoder.toBuffer();
         const finalName = `${nameWithoutExtention}.webp`;
         await writeFile(path.join(dir.filePaths[0], finalName), buff);
@@ -114,7 +114,7 @@ app.on("web-contents-created", (e, contents) => {
   });
 
   contents.on("will-navigate", (event, navigationUrl) => {
-    const parsedURL = parse(navigationUrl);
+    const parsedURL = new URL(navigationUrl);
     // In dev mode allow Hot Module Replacement
     if (parsedURL.host !== "localhost:5000" && !isProd) {
       logger.warn("Stopped attempt to open: " + navigationUrl);
