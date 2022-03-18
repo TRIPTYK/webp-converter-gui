@@ -55,7 +55,7 @@ const createWindow = () => {
     try {
       const dir = await dialog.showOpenDialog({ properties: ["openDirectory"] });
       if (dir.canceled) {
-        throw new Error("Pas de dossier choisi");
+        throw new Error("Please choose a folder");
       }
       const uploadedFileNames = await Promise.all(
         files.map(async ({ fileName, fileBuffer, quality }) => {

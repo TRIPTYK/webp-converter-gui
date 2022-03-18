@@ -69,10 +69,10 @@
       fileinput.value = "";
       hasFile = false;
       if (fileNames.length > 1) {
-        return notifier.success(`${fileNames.length} fichiers ont été convertis en webp`, 5000);
+        return notifier.success(`${fileNames.length} files has been converted to webp`, 5000);
       }
       for (const fileName of fileNames) {
-        notifier.success(`Fichier converti en tant que ${fileName} !`, 5000);
+        notifier.success(`File converted as ${fileName} !`, 5000);
       }
     });
 
@@ -81,7 +81,7 @@
 </script>
 
 <main>
-  <h1>Uploadez un fichier !</h1>
+  <h1>Drop some files !</h1>
   <div>
     <input
       class="{hasFile ? 'hidden' : ''}"
@@ -92,7 +92,7 @@
       multiple
     />
     <br />
-    <label for="quality">Qualité ({quality})</label>
+    <label for="quality">Quality ({quality})</label>
     <input
       on:input="{(e) => onQualityDrag(e)}"
       bind:value="{quality}"
