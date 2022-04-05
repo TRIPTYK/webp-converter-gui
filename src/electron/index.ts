@@ -41,7 +41,7 @@ const createWindow = () => {
       ? // in production, use the statically build version of our application
         `file://${join(__dirname, "public", "index.html")}`
       : // in dev, target the host and port of the local rollup web server
-        "http://localhost:5000";
+        "http://127.0.0.1:5000";
 
   mainWindow.loadURL(url).catch((err) => {
     logger.error(JSON.stringify(err));
@@ -116,7 +116,7 @@ app.on("web-contents-created", (e, contents) => {
   contents.on("will-navigate", (event, navigationUrl) => {
     const parsedURL = new URL(navigationUrl);
     // In dev mode allow Hot Module Replacement
-    if (parsedURL.host !== "localhost:5000" && !isProd) {
+    if (parsedURL.host !== "127.0.0.1:5000" && !isProd) {
       logger.warn("Stopped attempt to open: " + navigationUrl);
       event.preventDefault();
     } else if (isProd) {
